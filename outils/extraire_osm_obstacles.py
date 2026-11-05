@@ -45,7 +45,7 @@ ATTENTION PERFORMANCE / FIABILITE :
 """
 
 import json
-import urllib.request
+import http.client
 import urllib.parse
 import urllib.error
 
@@ -87,6 +87,26 @@ TIMEOUT_S = 180
 # ============================================================================
 # 1) DETERMINATION DE L'EMPRISE (bbox WGS84 pour Overpass)
 # ============================================================================
+
+def _post_https(url, body, timeout):
+    """POST https uniquement (http.client) ; leve urllib.error.HTTPError si statut >= 400."""
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme.lower() != "https" or not parts.hostname:
+        raise ValueError("OVERPASS_URL doit utiliser https")
+    conn = http.client.HTTPSConnection(parts.hostname, parts.port or 443,
+                                       timeout=timeout)
+    try:
+        conn.request("POST", (parts.path or "/") + ("?" + parts.query if parts.query else ""),
+                     body=body,
+                     headers={"Content-Type": "application/x-www-form-urlencoded"})
+        resp = conn.getresponse()
+        data = resp.read()
+        if resp.status >= 400:
+            raise urllib.error.HTTPError(url, resp.status, resp.reason, resp.headers, None)
+        return data
+    finally:
+        conn.close()
+
 
 def _trouver_couche_emprise():
     proj = QgsProject.instance()
@@ -136,19 +156,15 @@ out geom;
 
     print("  Envoi de la requete a Overpass API (peut prendre du temps)...")
     body = ("data=" + urllib.parse.quote(query)).encode("utf-8")
-    req = urllib.request.Request(OVERPASS_URL, data=body, method="POST")
     try:
-        if urllib.parse.urlparse(OVERPASS_URL).scheme.lower() != "https":
-            raise ValueError("OVERPASS_URL doit utiliser https")
-        with urllib.request.urlopen(req, timeout=TIMEOUT_S) as resp:  # nosec B310 - https verifie
-            raw = resp.read()
+        raw = _post_https(OVERPASS_URL, body, TIMEOUT_S)
     except urllib.error.HTTPError as e:
         raise RuntimeError(
             f"Overpass a repondu une erreur HTTP {e.code}. "
             f"Si c'est un 429/504, reessayez dans quelques minutes ou "
             f"reduisez l'emprise (EXTENT_BUFFER_M) / la zone de la couche."
         ) from e
-    except urllib.error.URLError as e:
+    except (urllib.error.URLError, OSError) as e:
         raise RuntimeError(
             f"Impossible de contacter Overpass ({e}). Verifiez votre "
             f"connexion internet / pare-feu."

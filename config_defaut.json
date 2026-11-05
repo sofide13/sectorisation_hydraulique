@@ -1,0 +1,228 @@
+{
+  "_comment": "Configuration par défaut - Sectorisation Hydraulique",
+  "_version": "0.1",
+  "COUCHES": {
+    "AEP_LAYER": "AEP",
+    "ABONNE_LAYER": "abonne",
+    "TANK_LAYER": "tank",
+    "COMMUNE_LAYER": "commune",
+    "ROUTE_LAYER": "routes",
+    "BATIMENT_LAYER": "",
+    "STADE_LAYER": "",
+    "HOPITAL_LAYER": "",
+    "CHEMIN_FER_LAYER": "",
+    "DEM_PATH": "E:/Extention/dem_UTM.tif"
+  },
+  "DECOUPE_ROUTES": {
+    "_comment": "Decoupe geometrique reelle des limites de secteur (couche secteurs_limites) : suit les routes, sans jamais couper un batiment/stade/hopital/chemin de fer. Mettre un nom de couche vide (\"\") dans COUCHES pour desactiver une couche precise. Si ROUTE_LAYER est introuvable dans le projet, repli automatique sur un Voronoi pur sur les noeuds (comportement d'origine).",
+    "ACTIVER_DECOUPE_ROUTES": true,
+    "INCLURE_TANK_ABONNE_DANS_EMPRISE": true,
+    "LARGEUR_TAMPON_ROUTE_M": 4.0,
+    "_comment_tampon_variable": "FIX11 : tampon routier VARIABLE par troncon (au lieu du rayon unique LARGEUR_TAMPON_ROUTE_M applique a toutes les routes). Priorite de resolution, par troncon : 1) CHAMPS.CHAMP_LARGEUR_TAMPON_ROUTE si renseigne sur ce troncon (rayon en m directement dans l'attribut) ; 2) sinon CHAMPS.CHAMP_TYPE_ROUTE + LARGEUR_TAMPON_PAR_TYPE_ROUTE ci-dessous (mappe une valeur categorielle du champ vers un rayon) ; 3) sinon LARGEUR_TAMPON_ROUTE_M (comportement d'origine, rayon unique). Laisser les deux champs de CHAMPS vides ('') pour retrouver exactement l'ancien comportement. Les deux noms de champ se configurent dans la section CHAMPS (onglet Essentiels -> Champs attributaires), ex: LARGEUR_TAMPON_PAR_TYPE_ROUTE = {\"nationale\": 1.0, \"secondaire\": 0.5, \"chemin\": 0.1}.",
+    "LARGEUR_TAMPON_PAR_TYPE_ROUTE": {},
+    "LARGEUR_TAMPON_VOIE_FERREE_M": 6.0,
+    "_comment_fermeture": "RAYON_FERMETURE_INTRA_SECTEUR_M : rayon de fermeture morphologique (buffer+R puis buffer-R) appliquee a chaque secteur. Doit etre suffisamment grand pour fusionner TOUS les ilots/batiments voisins en un seul polygone solide. Avec des routes mappees au niveau des facades de batiment (ilots = batiments individuels de 15-30m), utiliser 25m minimum. Mettre 0 pour desactiver.",
+    "RAYON_FERMETURE_INTRA_SECTEUR_M": 25.0
+  },
+  "CHAMPS": {
+    "PIPE_DIAMETER_FIELD": "DIAMETRE",
+    "PIPE_LENGTH_FIELD": "LENGTH",
+    "TANK_CAPACITY_FIELD": "capacite",
+    "TANK_COTE_EAU_FIELD": "cote_eau",
+    "TANK_DEBIT_SOURCE_FIELD": "DEBIT_SOURCE_M3_J",
+    "CHAMP_BLOC_ABONNE": "bloc",
+    "CHAMP_ETAGE_ABONNE": "etage",
+    "CHAMP_LARGEUR_TAMPON_ROUTE": "",
+    "CHAMP_TYPE_ROUTE": "",
+    "CHAMP_LARGEUR_CORRIDOR_AEP": ""
+  },
+  "DEMOGRAPHIQUE": {
+    "HABITANTS_PAR_ABONNE": 5.0,
+    "DOTATION_L_HAB_JOUR": 150.0,
+    "COEF_POINTE_HORAIRE": 1.3
+  },
+  "PLAGES_SECTEUR": {
+    "ABONNES_MIN_PAR_SECTEUR": 500,
+    "ABONNES_MAX_PAR_SECTEUR": 3000,
+    "ABONNES_IDEAL_PAR_SECTEUR": 2000,
+    "ABONNES_IDEAL_CIBLE_SCISSION": 2000,
+    "TAILLE_MIN_COUPURE_AB": 500,
+    "_comment_pratique_dma": "Plage de conception configurable. Valeur par défaut 500-3000 pour alignement avec une pratique DMA courante; adapter si les données locales ou les objectifs d'exploitation justifient une autre borne."
+  },
+  "HYDRAULIQUE": {
+    "PRESSION_MIN_M": 10.0,
+    "PRESSION_MAX_M": 60.0,
+    "PRESSION_CIBLE_M": 30.0,
+    "COEF_HAZEN_WILLIAMS": 130.0,
+    "PERTE_CHARGE_MAX_M": 80.0,
+    "HAUTEUR_EAU_RESERVOIR_M": 4.0,
+    "CORRECTION_COTE_PIEZO_M": 0.0,
+    "ECART_MAX_MNT_RESERVOIR": 80.0,
+    "PRESSION_MARGE_SECURITE": 5.0,
+    "SNAP_TOLERANCE": 0.1,
+    "TANK_RESEARCH_M": 2000.0,
+    "TANK_RESEARCH_EXPAND_FACTOR": 2.0,
+    "MAX_TANK_RESEARCH_M": 5000.0,
+    "VORONOI_CLIP_BUFFER_M": 150.0,
+    "MAX_ITER_CONSOLIDATION": 80,
+    "_comment_plage_conception": "10-60 m est une plage de conception configurable dans ce projet, pas une déclaration de conformité à une norme non consultée."
+  },
+  "PRV_SURPRESSEUR": {
+    "DN_MIN_PRV": 100,
+    "DN_MIN_SURPRESSEUR": 100,
+    "PRESSION_CIBLE_MIN": 10.0,
+    "PRESSION_CIBLE_MAX": 60.0
+  },
+  "VITESSES": {
+    "VITESSE_MIN_M_S": 0.3,
+    "VITESSE_MAX_M_S": 2.0,
+    "DN_MIN_CONTROLE_VITESSE": 100,
+    "ABONNES_AVAL_MIN_CONTROLE_VITESSE": 5,
+    "_comment_plage_conception": "0.3-2.0 m/s est une plage de conception configurable dans ce projet; elle doit être confirmée par les prescriptions applicables au projet."
+  },
+  "CAPACITE_RESERVOIR": {
+    "JOURS_AUTONOMIE_RESERVOIR": 1.0,
+    "MARGE_SECURITE_CAPACITE_PCT": 0.05,
+    "CAPACITE_PRINCIPAL_MIN_M3": 2000.0,
+    "CAPACITE_SECONDAIRE_MIN_M3": 500.0,
+    "PRIORITE_SCORE_PRINCIPAL": 100,
+    "PRIORITE_SCORE_SECONDAIRE": 80,
+    "PRIORITE_SCORE_SECOURS": 30,
+    "PENALITE_HORS_PLAGE_COEF": 50.0,
+    "ACTIVER_CAPACITE_SOURCE": true
+  },
+  "ETAGES": {
+    "GRILLE_ETAGE_M": 1.6,
+    "HAUTEUR_ETAGE_M": 3.0,
+    "NIVEAU_MAX_PLAUSIBLE": 5,
+    "BLOC_MAX_NIVEAUX": 6,
+    "SEUIL_BLOCS_ANOMALIE": 5
+  },
+  "VORONOI": {
+    "UTILISER_VORONOI_AMORCE": true,
+    "VORONOI_BIAS_FAVORISE": 0.6,
+    "VORONOI_BIAS_PENALISE": 1.6
+  },
+  "RESERVOIRS_ISOLES": {
+    "RAYON_M_ISOLEMENT": 2000.0,
+    "SEUIL_ABONNES_ISOLEMENT": 20
+  },
+  "RAFFINEMENT": {
+    "MAX_ROUNDS_RAFFINEMENT": 120,
+    "AMELIORATION_MIN_TRANSFERT_M": 0.001,
+    "MAX_TRANSFERTS_PAR_NOEUD": 30,
+    "PENALITE_CAPACITE_COEF": 2000.0,
+    "DEGRADATION_PRESSION_MAX_M": 50.0,
+    "MAX_SAUTS_RAFFINEMENT": 4
+  },
+  "POLYGONES_TOPOLOGIQUES": {
+    "_comment": "Parametres du NOUVEAU module core/polygones_topologiques.py (habillage cartographique en aval du socle graphe core/graphe_topologique.py). Aucune dependance aux routes/largeur de route -- seulement un buffer fixe sur les conduites AEP. SEUIL_DN_TRANSPORT_MM : les conduites de diametre >= ce seuil (champ CHAMPS.PIPE_DIAMETER_FIELD) sont des conduites de TRANSPORT/adduction -- elles ne sont JAMAIS bufferisees en polygone (elles traversent souvent geographiquement d'autres secteurs) et restent affichees en ligne seule (couche conduites_transport_topo). Plage DN du reseau : 30-600mm -- 150mm separe raisonnablement transport (>=150) et distribution (<150), a ajuster selon votre reseau reel.",
+    "LARGEUR_TAMPON_CONDUITE_M": 30.0,
+    "SOUDURE_MAX_M": 0.0,
+    "SEUIL_DN_TRANSPORT_MM": 150.0,
+    "_comment_scission_zones": "SCISSION_PAR_ANTENNE_TRANSPORT (etape 3bis du socle, cf. core/graphe_topologique.scinder_par_continuite_distribution) : logique 'qui alimente qui' -- si deux blocs de DISTRIBUTION d'un meme secteur/reservoir ne sont relies entre eux que par une conduite de TRANSPORT (DN >= SEUIL_DN_TRANSPORT_MM), ils sont scindes en zones independantes (secteur_zone1, secteur_zone2, ...), chacune son propre polygone simple avec sa propre antenne de transport amont. Mettre a false pour revenir au comportement d'origine (secteur potentiellement multi-parties, non scinde). ZONE_MIN_NOEUDS : taille minimale (en noeuds) pour qu'un bloc disjoint soit promu zone independante plutot que rattache a la zone la plus proche.",
+    "SCISSION_PAR_ANTENNE_TRANSPORT": true,
+    "ZONE_MIN_NOEUDS": 2
+  },
+  "CONSOLIDATION_SECTEURS": {
+    "_comment": "correctif FIX-COMPTE-SECTEURS (cf. core/consolidation_secteurs.py). Le socle topologique produisait un nombre de \"secteurs\" tres superieur au nombre reel de secteurs hydrauliques (460 zones observees pour quelques dizaines de secteurs dans secteurs_hydrauliques), parce que chaque bloc de conduites de distribution rendu disjoint par le seuil SEUIL_DN_TRANSPORT_MM etait promu secteur (_zoneN), en plus des modules Louvain (_Mi). Or une DMA se compte en centaines a milliers de branchements (IWA DMA Guidance Notes 2007, AWWA M36, plages ABONNES_MIN/MAX_PAR_SECTEUR = 500-3000 ici) : un bloc de 2 a 5 noeuds est une SOUS-ZONE de sous-comptage, pas un secteur. CONSOLIDER_ZONES_EN_SECTEURS=true conserve ce decoupage comme attribut (champ sous_zones) au lieu d'en faire des secteurs. ALIGNER_SUR_SECTEURS_REFERENCES=true aligne ensuite le socle, conduite par conduite (COUCHE_REFERENCE_CONDUITES, champs pipe_id/secteur_id -- aucune operation geometrique), sur la partition de record produite par pipeline : le nombre de polygones de secteurs_hydrauliques_topo est alors EGAL au nombre de secteurs de COUCHE_REFERENCE_SECTEURS (phase d'agregation sous contrainte : Perelman & Ostfeld 2011 ; Diao, Zhou & Rauch 2013 ; Giustolisi & Ridolfi 2014). Mettre les deux a false pour retrouver le comportement anterieur.",
+    "CONSOLIDER_ZONES_EN_SECTEURS": true,
+    "ALIGNER_SUR_SECTEURS_REFERENCES": true,
+    "COUCHE_REFERENCE_SECTEURS": "secteurs_hydrauliques",
+    "COUCHE_REFERENCE_CONDUITES": "conduites_sectorisees"
+  },
+  "PARTITION": {
+    "_comment": "FIX-PARTITION : partition STRICTE des ilots urbains (core/partition_secteurs.py). Les territoires de secteur (secteurs_hydrauliques, secteurs_limites, secteurs_hydrauliques_topo) pavent le tissu urbanise : limites sur les lignes centrales de rues, 0 chevauchement, 0 ilot parasite, JAMAIS d'enveloppe convexe. Repli automatique sur corridor-buffer nettoye si la couche routes est absente ou non bouclee.",
+    "ACTIVER_PARTITION_ILOTS": true,
+    "SEUIL_AIRE_ILOT_M2": 2000.0,
+    "LARGEUR_MAX_VOIE_M": 30.0,
+    "AIRE_MAX_RATTACHEMENT_M2": 300000.0,
+    "MAX_PASSES_NETTOYAGE": 4,
+    "SNAP_LIMITE_M": 0.5,
+    "_comment_contiguite": "FIX-CONTIGUITE-TERRITOIRES : dans QGIS, selectionner un secteur allumait une dizaine de morceaux eparpilles dans toute la ville, entremeles avec ceux des secteurs voisins, et parfois un morceau en plein desert. Un secteur / DMA se lit comme UNE zone continue (AWWA M36, IWA DMA Guidance Notes 2007). ASSURER_CONTIGUITE_TERRITOIRES=true ramene chaque secteur a un territoire d'un seul tenant : le morceau principal (celui qui porte le plus d'abonnes) reste au secteur, chaque autre morceau rejoint le secteur voisin avec lequel il partage la plus longue frontiere -- transfert de TERRITOIRE seulement, aucune appartenance hydraulique de noeud ou de conduite n'est modifiee, aucune surface creee ni perdue, jamais d'enveloppe convexe. AIRE_EXCLAVE_TOLEREE_M2 > 0 permet de conserver les grandes annexes reelles (une annexe de cette surface ou plus n'est pas absorbee). DIST_MAX_ILOT_SANS_NOEUD_M borne le rattachement d'un ilot SANS aucun noeud de reseau au secteur du noeud le plus proche : au-dela de cette distance l'ilot n'est desservi par personne (terrain agricole, desert) et n'entre dans aucun territoire ; mettre 0 pour retrouver le comportement precedent (tout ilot etait rattache, meme a plusieurs kilometres). Mettre ASSURER_CONTIGUITE_TERRITOIRES a false pour retrouver le comportement precedent.",
+    "ASSURER_CONTIGUITE_TERRITOIRES": true,
+    "AIRE_EXCLAVE_TOLEREE_M2": 0.0,
+    "MAX_PASSES_CONTIGUITE": 60,
+    "DIST_MAX_ILOT_SANS_NOEUD_M": 300.0
+  },
+  "CORRIDOR_RESEAU": {
+    "LARGEUR_CORRIDOR_M": 25.0,
+    "BUFFER_SEGMENTS": 8,
+    "_comment_corridor_variable": "FIX14 : secteurs_hydrauliques est desormais construite par POLYGONISATION DES ILOTS URBAINS reels (blocs enclaves par le reseau de routes, cf. sectorisation DMA par morphologie urbaine) plutot que par un buffer geometrique. ACTIVER_ILOTS_URBAINS=false revient a l'ancien corridor-buffer (FIX13) pour toute l'emprise. Meme quand actif, le corridor-buffer (parametres ci-dessous) reste utilise comme complement automatique la ou le reseau routier ne ferme pas de polygone (trous, reseau non boucle).",
+    "ACTIVER_ILOTS_URBAINS": true,
+    "ACTIVER_CORRIDOR_VARIABLE_DIAMETRE": true,
+    "COEF_LARGEUR_CORRIDOR_PAR_DIAMETRE": 40.0,
+    "LARGEUR_CORRIDOR_MIN_M": 3.0,
+    "LARGEUR_CORRIDOR_MAX_M": 25.0,
+    "ACTIVER_ROGNAGE_ROUTES_CORRIDOR": true
+  },
+  "DIVERS": {
+    "SEUIL_ALERTE_PCT_MNT_FALLBACK": 5.0,
+    "SEUIL_DOUBLON_RESERVOIR_M": 20.0,
+    "ECART_PRESSION_ANOMALIE_M": 80.0,
+    "SEUIL_ALERTE_PCT_HORS_NORME": 15.0,
+    "FACTEUR_CAPACITE_CROISSANCE": 1.5,
+    "SEUIL_SATURATION_CROISSANCE": 0.8
+  },
+  "MULTI_ITERATIONS": {
+    "NB_ITERATIONS_INTERNES": 4,
+    "SEED_BASE": 42,
+    "VARIATION_PARAM_PCT": 0.15,
+    "POIDS_SCORE_PRESSION": 3.0,
+    "POIDS_SCORE_CAPACITE": 20.0,
+    "POIDS_SCORE_FRAGMENTATION": 2000.0
+  },
+  "BOUCLE_ADAPTATIVE": {
+    "MAX_CYCLES_CONFORMITE": 1,
+    "FACTEUR_DURCISSEMENT_PENALITE": 1.3,
+    "SEUIL_REDUCTION_VIOLATIONS_PCT": 2.0,
+    "ACTIVER_REDISTRIBUTION_FORCEE": true,
+    "TAUX_CIBLE_CAPACITE_MAX": 0.92,
+    "ACTIVER_CORRECTION_SURPRESSION": true,
+    "EXIGER_CONFORMITE_TOTALE": true,
+    "PENALITE_SURCHARGE_COEF_INIT": 2000.0,
+    "SEUIL_DECLENCHEMENT_REDISTRIB": -1,
+    "MAX_DURCISSEMENTS_CONSECUTIFS": 4
+  },
+  "RECALIBRATION": {
+    "ACTIVER_RECALIBRATION_COTE": true,
+    "MAX_AJUSTEMENT_COTE_M": 15.0,
+    "SEUIL_PCT_VIOLATION_RECALIBRATION": 0.2,
+    "SEUIL_ECART_TOPO_M": 60.0
+  },
+  "CORRECTION_FORCEE": {
+    "ACTIVER_CORRECTION_FORCEE": true,
+    "MAX_ITER_CORRECTION_FORCEE": 50
+  },
+  "CONNEXITE": {
+    "ACTIVER_GARANTIE_CONNEXITE": true,
+    "MAX_PASSES_GARANTIE_CONNEXITE_FINALE": 3
+  },
+  "REDISTRIBUTION": {
+    "MAX_SAUTS_REDISTRIBUTION": 3,
+    "ACTIVER_PLAFOND_ABONNES_MAX": true,
+    "ACTIVER_REDISTRIBUTION_SOUS_ARBRE": true,
+    "TAILLE_MAX_SOUS_ARBRE_REDISTRIBUTION": 400,
+    "MAX_TRANSFERTS_REDIS": 1000
+  },
+  "SCISSION": {
+    "ACTIVER_SCISSION_SECTEURS": true,
+    "ACTIVER_PASSE_THEORIQUE": true
+  },
+  "ALTIMETRIQUE": {
+    "ACTIVER_SCISSION_ALTIMETRIQUE": true,
+    "BANDE_PRESSION_UTILE_M": 45.0,
+    "MARGE_BASSE_AVANT_COUPURE_M": 2.0,
+    "ECART_ALT_MAX_FUSION_M": 45.0
+  },
+  "WNTR_VALIDATION": {
+    "_comment": "Validation solveur indépendante des pressions finales. WNTR doit être installé dans l environnement Python de QGIS.",
+    "VALIDER_PRESSION_WNTR": true,
+    "FERMER_CONDUITES_FRONTIERES_WNTR": true,
+    "RUGOSITE_WNTR": 130.0
+  },
+  "VANNES_SECTORISATION": {
+    "_comment": "Une vanne d isolement est proposée sur chaque conduite reliant deux secteurs finaux. La couche vannes_sectorisation doit être vérifiée et dimensionnée avant travaux.",
+    "AJOUTER_VANNES_SECTORISATION": true
+  }
+}

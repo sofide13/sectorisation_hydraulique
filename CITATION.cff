@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Si vous utilisez cette extension, merci de la citer comme ci-dessous."
+title: "Sectorisation Hydraulique - extension QGIS"
+version: "1.1.4"
+type: software
+authors:
+  - family-names: "Kouidri"
+    given-names: "Sofiane"
+    email: "sofihydro@gmail.com"
+abstract: "Sectorisation hydraulique automatisee des reseaux d'alimentation en eau potable."
+date-released: "2026-11-05"
+keywords: [QGIS, AEP, eau potable, hydraulique]

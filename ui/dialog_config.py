@@ -32,8 +32,8 @@ from ..core.config_manager import (
 
 def _separateur():
     line = QFrame()
-    line.setFrameShape(QFrame.HLine)
-    line.setFrameShadow(QFrame.Sunken)
+    line.setFrameShape(QFrame.Shape.HLine)
+    line.setFrameShadow(QFrame.Shadow.Sunken)
     return line
 
 
@@ -874,8 +874,8 @@ class DialogueConfig(QDialog):
 
         # Onglets
         self._tabs = QTabWidget()
-        layers_noms = [l.name() for l in QgsProject.instance().mapLayers().values()
-                       if isinstance(l, (QgsVectorLayer, QgsRasterLayer))]
+        layers_noms = [lyr.name() for lyr in QgsProject.instance().mapLayers().values()
+                       if isinstance(lyr, (QgsVectorLayer, QgsRasterLayer))]
         self._onglet_simple  = OngletSimple(self._config_json, layers_noms)
         self._onglet_avance  = OngletAvance(self._config_json)
         self._onglet_aide    = OngletAide()
@@ -886,9 +886,9 @@ class DialogueConfig(QDialog):
 
         # Boutons OK / Annuler
         layout.addWidget(_separateur())
-        btn_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        btn_box.button(QDialogButtonBox.Ok).setText("Appliquer")
-        btn_box.button(QDialogButtonBox.Cancel).setText("Annuler")
+        btn_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        btn_box.button(QDialogButtonBox.StandardButton.Ok).setText("Appliquer")
+        btn_box.button(QDialogButtonBox.StandardButton.Cancel).setText("Annuler")
         btn_box.accepted.connect(self._valider_et_accepter)
         btn_box.rejected.connect(self.reject)
         layout.addWidget(btn_box)
@@ -928,8 +928,8 @@ class DialogueConfig(QDialog):
         rep = QMessageBox.question(
             self, "Réinitialiser",
             "Revenir à la configuration par défaut ?\nLes modifications non sauvegardées seront perdues.",
-            QMessageBox.Yes | QMessageBox.No)
-        if rep == QMessageBox.Yes:
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if rep == QMessageBox.StandardButton.Yes:
             try:
                 self._config_json = charger_config_json()
                 self._chemin_json_courant = None
@@ -940,7 +940,7 @@ class DialogueConfig(QDialog):
 
     def _rafraichir_onglets(self):
         """Recrée les onglets avec la nouvelle config."""
-        layers_noms = [l.name() for l in QgsProject.instance().mapLayers().values()]
+        layers_noms = [lyr.name() for lyr in QgsProject.instance().mapLayers().values()]
         idx_courant = self._tabs.currentIndex()
         self._tabs.clear()
         self._onglet_simple = OngletSimple(self._config_json, layers_noms)
@@ -968,8 +968,8 @@ class DialogueConfig(QDialog):
             msg = "Des paramètres semblent incorrects :\n\n" + "\n".join(f"• {e}" for e in erreurs)
             rep = QMessageBox.warning(
                 self, "Paramètres suspects", msg + "\n\nAppliquer quand même ?",
-                QMessageBox.Yes | QMessageBox.No)
-            if rep == QMessageBox.No:
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if rep == QMessageBox.StandardButton.No:
                 return
         self._config_json = config_json_new
         self.accept()

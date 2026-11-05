@@ -5,14 +5,13 @@ Dock panel QGIS : résumé config, lancement, journal de sortie.
 """
 
 import os
-import sys
 import traceback
 from datetime import datetime
 
 from qgis.PyQt.QtWidgets import (
     QDockWidget, QWidget, QVBoxLayout,
     QPushButton, QLabel, QTextEdit, QProgressBar,
-    QGroupBox, QFrame
+    QGroupBox, QFrame, QDialog
 )
 from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal, QObject
 from qgis.PyQt.QtGui import QFont, QTextCursor
@@ -27,8 +26,8 @@ from .dialog_config import DialogueConfig
 
 def _separateur():
     line = QFrame()
-    line.setFrameShape(QFrame.HLine)
-    line.setFrameShadow(QFrame.Sunken)
+    line.setFrameShape(QFrame.Shape.HLine)
+    line.setFrameShadow(QFrame.Shadow.Sunken)
     return line
 
 
@@ -218,11 +217,11 @@ class TopoWorker(QThread):
 class PanneauPrincipal(QDockWidget):
     def __init__(self, iface_ref, config_json, parent=None):
         super().__init__("Sectorisation Hydraulique", parent)
-        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea)
         self.setFeatures(
-            QDockWidget.DockWidgetMovable |
-            QDockWidget.DockWidgetFloatable |
-            QDockWidget.DockWidgetClosable
+            QDockWidget.DockWidgetFeature.DockWidgetMovable |
+            QDockWidget.DockWidgetFeature.DockWidgetFloatable |
+            QDockWidget.DockWidgetFeature.DockWidgetClosable
         )
         self._iface = iface_ref
         self._config_json = config_json
@@ -347,7 +346,7 @@ class PanneauPrincipal(QDockWidget):
 
         self._lbl_etape = QLabel("")
         self._lbl_etape.setStyleSheet("font-size: 10px; color: #555; padding: 2px;")
-        self._lbl_etape.setAlignment(Qt.AlignCenter)
+        self._lbl_etape.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self._lbl_etape)
 
         layout.addWidget(_separateur())
@@ -403,7 +402,7 @@ class PanneauPrincipal(QDockWidget):
 
     def _ouvrir_config(self):
         dlg = DialogueConfig(self._config_json, parent=self)
-        if dlg.exec_() == DialogueConfig.Accepted:
+        if dlg.exec() == QDialog.DialogCode.Accepted:
             self._config_json = dlg.config_json_resultat()
             self._maj_resume_config()
             self._log("Configuration mise à jour.")
@@ -446,7 +445,7 @@ class PanneauPrincipal(QDockWidget):
             self._lbl_etape.setText("✅ Sectorisation terminée")
             self._log(f"\n✅ {message}")
             iface.messageBar().pushMessage(
-                "Sectorisation", message, level=Qgis.Success, duration=5)
+                "Sectorisation", message, level=Qgis.MessageLevel.Success, duration=5)
             # Enchaînement AUTOMATIQUE et TOUJOURS effectué : le socle
             # topologique  démarre dès que la sectorisation (moteur hydraulique, avec
             # ses calculs hydrauliques) s'est terminée avec succès. On ne
@@ -469,7 +468,7 @@ class PanneauPrincipal(QDockWidget):
                 "l'erreur ci-dessus puis relancez."
             )
             iface.messageBar().pushMessage(
-                "Sectorisation", f"Erreur : {message}", level=Qgis.Critical, duration=8)
+                "Sectorisation", f"Erreur : {message}", level=Qgis.MessageLevel.Critical, duration=8)
 
     def _lancer_topo(self, chaine_depuis_pipeline=False):
         """Lance le socle topologique . Si chaine_depuis_pipeline=True
@@ -547,7 +546,7 @@ class PanneauPrincipal(QDockWidget):
                     self._log(
                         f"  (avertissement : nettoyage snapping impossible "
                         f"pour '{nom}' : {e})")
-                project.removeMapLayers([l.id() for l in anciennes])
+                project.removeMapLayers([lyr.id() for lyr in anciennes])
             project.addMapLayer(couche)
 
     def _topo_termine(self, succes, message):
@@ -557,12 +556,12 @@ class PanneauPrincipal(QDockWidget):
             self._lbl_etape.setText("✅ Sectorisation + socle topologique terminés")
             self._log(f"\n✅ {message}")
             iface.messageBar().pushMessage(
-                "Socle topologique", message, level=Qgis.Success, duration=5)
+                "Socle topologique", message, level=Qgis.MessageLevel.Success, duration=5)
         else:
             self._lbl_etape.setText("❌ Erreur (socle topologique)")
             self._log(f"\n❌ {message}")
             iface.messageBar().pushMessage(
-                "Socle topologique", f"Erreur : {message}", level=Qgis.Critical, duration=8)
+                "Socle topologique", f"Erreur : {message}", level=Qgis.MessageLevel.Critical, duration=8)
 
     def _maj_progres(self, valeur, etape):
         self._progress.setValue(valeur)
@@ -570,7 +569,7 @@ class PanneauPrincipal(QDockWidget):
 
     def _log(self, message):
         curseur = self._journal.textCursor()
-        curseur.movePosition(QTextCursor.End)
+        curseur.movePosition(QTextCursor.MoveOperation.End)
         self._journal.setTextCursor(curseur)
         self._journal.insertPlainText(message + "\n")
         self._journal.ensureCursorVisible()

@@ -216,9 +216,9 @@ class Geom:
             return []
         if BACKEND == "qgis":
             ft = _qgis_flat(self.impl)
-            if ft == QgsWkbTypes.Polygon:
+            if ft == QgsWkbTypes.Type.Polygon:
                 return [Geom(QgsGeometry(self.impl))]
-            if ft == QgsWkbTypes.MultiPolygon:
+            if ft == QgsWkbTypes.Type.MultiPolygon:
                 return [Geom(QgsGeometry.fromPolygonXY(p))
                         for p in self.impl.asMultiPolygon() if p]
             # collection générique
@@ -245,7 +245,7 @@ class Geom:
             return self
         if BACKEND == "qgis":
             ft = _qgis_flat(self.impl)
-            if ft == QgsWkbTypes.Polygon:
+            if ft == QgsWkbTypes.Type.Polygon:
                 rings = self.impl.asPolygon()
                 if not rings:
                     return self
@@ -254,7 +254,7 @@ class Geom:
                 keep = [r for r, h in zip(rings[1:], holes)
                         if keep_predicate is not None and keep_predicate(Geom(h))]
                 return Geom(QgsGeometry.fromPolygonXY([ext] + keep))
-            if ft == QgsWkbTypes.MultiPolygon:
+            if ft == QgsWkbTypes.Type.MultiPolygon:
                 polys = []
                 for p in self.impl.asMultiPolygon():
                     if not p:
@@ -347,9 +347,9 @@ def multi(geoms):
         polys = []
         for g in geoms:
             ft = _qgis_flat(g.impl)
-            if ft == QgsWkbTypes.Polygon:
+            if ft == QgsWkbTypes.Type.Polygon:
                 polys.append(g.impl.asPolygon())
-            elif ft == QgsWkbTypes.MultiPolygon:
+            elif ft == QgsWkbTypes.Type.MultiPolygon:
                 polys.extend(g.impl.asMultiPolygon())
         return Geom(QgsGeometry.fromMultiPolygonXY(polys)) if polys else None
     from shapely.geometry import MultiPolygon as _MP

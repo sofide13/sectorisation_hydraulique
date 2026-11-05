@@ -13,6 +13,7 @@ obtient un statut explicite ``indisponible`` et ne doit pas presenter les
 pressions estimees comme une validation solveur.
 """
 
+import logging
 from collections import defaultdict
 import importlib
 import os
@@ -34,12 +35,14 @@ def _import_wntr():
         chemins = []
         try:
             chemins.append(site.getusersitepackages())
-        except Exception:
-            pass
+        except Exception as exc:
+            logging.getLogger(__name__).debug(
+                "Exception ignoree : %s", exc)
         try:
             chemins.extend(site.getsitepackages())
-        except Exception:
-            pass
+        except Exception as exc:
+            logging.getLogger(__name__).debug(
+                "Exception ignoree : %s", exc)
         for chemin in chemins:
             if not chemin or chemin in sys.path:
                 continue

@@ -33,6 +33,7 @@ Changements du build (5 correctifs demandes, cf. diagnostic du run precedent) :
 =========================================================================
 """
 
+import logging
 import hashlib
 import heapq
 import itertools
@@ -64,8 +65,9 @@ import processing
 try:
     from processing.core.Processing import Processing
     Processing.initialize()
-except Exception:
-    pass
+except Exception as exc:
+    logging.getLogger(__name__).debug(
+        "Exception ignoree : %s", exc)
 
 
 class PipelineAnnule(Exception):
@@ -303,8 +305,9 @@ def executer(config=None, on_etape=None, annuler_callback=None):
         if sys.stdout is not None:
             try:
                 sys.stdout.flush()
-            except Exception:
-                pass
+            except Exception as exc:
+                logging.getLogger(__name__).debug(
+                    "Exception ignoree : %s", exc)
 
     def _verifier_annulation():
         if annuler_callback is not None and annuler_callback():
@@ -459,8 +462,9 @@ def executer(config=None, on_etape=None, annuler_callback=None):
                 line = geom.asPolyline()
                 if line and len(line) >= 2:
                     return QgsPointXY(line[0]), QgsPointXY(line[-1])
-        except Exception:
-            pass
+        except Exception as exc:
+            logging.getLogger(__name__).debug(
+                "Exception ignoree : %s", exc)
         return None, None
 
     def calculer_debit_abonne():
@@ -478,9 +482,9 @@ def executer(config=None, on_etape=None, annuler_callback=None):
         if geom is None or geom.isEmpty():
             return geom
         wkb_type = geom.wkbType()
-        if wkb_type == QgsWkbTypes.MultiPolygon:
+        if wkb_type == QgsWkbTypes.Type.MultiPolygon:
             return geom
-        if wkb_type == QgsWkbTypes.Polygon:
+        if wkb_type == QgsWkbTypes.Type.Polygon:
             try:
                 return QgsGeometry.fromMultiPolygonXY([geom.asPolygon()])
             except Exception:
@@ -490,14 +494,15 @@ def executer(config=None, on_etape=None, annuler_callback=None):
             if geom.isMultipart():
                 parts = geom.asGeometryCollection()
                 for part in parts:
-                    if part.wkbType() == QgsWkbTypes.Polygon:
+                    if part.wkbType() == QgsWkbTypes.Type.Polygon:
                         polygons.append(part.asPolygon())
-            elif wkb_type == QgsWkbTypes.Polygon:
+            elif wkb_type == QgsWkbTypes.Type.Polygon:
                 polygons.append(geom.asPolygon())
             if polygons:
                 return QgsGeometry.fromMultiPolygonXY(polygons)
-        except Exception:
-            pass
+        except Exception as exc:
+            logging.getLogger(__name__).debug(
+                "Exception ignoree : %s", exc)
         return geom
 
     # simple cache for Hazen-Williams to avoid recomputing identical parameters
@@ -643,31 +648,23 @@ def executer(config=None, on_etape=None, annuler_callback=None):
                 use_dem = True
                 _log(f"  Altitudes echantillon : min={min(alt_trouvees):.1f}m, max={max(alt_trouvees):.1f}m")
 
-                def get_altitude(x, y):
-                    global _mnt_hits, _mnt_fallback
-                    key = (round(x, 1), round(y, 1))
-                    if key not in altitude_cache:
-                        alt = get_altitude_from_dem(x, y)
-                        if alt is not None:
-                            altitude_cache[key] = alt
-                            _mnt_hits += 1
-                        else:
-                            altitude_cache[key] = get_altitude_default(x, y)
-                            _mnt_fallback += 1
-                            _fallback_coords.append((x, y))
-                    return altitude_cache[key]
-
     if not use_dem:
         _log("\nATTENTION : aucun MNT utilisable -> altitudes approximatives")
 
-        def get_altitude(x, y):
-            global _mnt_fallback
-            key = (round(x, 1), round(y, 1))
-            if key not in altitude_cache:
+    def get_altitude(x, y):
+        """Altitude avec cache : MNT si disponible, sinon altitude approximative."""
+        global _mnt_hits, _mnt_fallback
+        key = (round(x, 1), round(y, 1))
+        if key not in altitude_cache:
+            alt = get_altitude_from_dem(x, y) if use_dem else None
+            if alt is not None:
+                altitude_cache[key] = alt
+                _mnt_hits += 1
+            else:
                 altitude_cache[key] = get_altitude_default(x, y)
                 _mnt_fallback += 1
                 _fallback_coords.append((x, y))
-            return altitude_cache[key]
+        return altitude_cache[key]
 
     # ============================================================================
     _etape(0)  # Reconstruction du reseau
@@ -1437,7 +1434,7 @@ def executer(config=None, on_etape=None, annuler_callback=None):
 
     if voronoi_polygones_bruts:
         voronoi_final_out = CoucheDifferee(f"Polygon?crs={pipe_layer.crs().authid()}",
-                                            "secteurs_voronoi_final_v67_COMPARATIF_UNIQUEMENT")
+                                            "secteurs_voronoi_final_v67_COMPARATIF_UNIQUEMENT")  # pragma: allowlist secret
         vfprov = voronoi_final_out.dataProvider()
         vfprov.addAttributes([QgsField("secteur_id", QVariant.String), QgsField("nom_reservoir", QVariant.String)])
         voronoi_final_out.updateFields()
@@ -2339,7 +2336,8 @@ def executer(config=None, on_etape=None, annuler_callback=None):
 
         for i in range(config_courante['NB_ITERATIONS_INTERNES']):
             seed = config_courante['SEED_BASE'] + cycle * 1000 + i
-            rng = random.Random(seed)
+            # Graine deterministe pour la reproductibilite des iterations (usage non cryptographique)
+            rng = random.Random(seed)  # nosec B311
             config_iter = dict(config_courante)
 
             if i > 0:
@@ -4102,7 +4100,7 @@ def executer(config=None, on_etape=None, annuler_callback=None):
                     continue
                 rd = reservoir_data.get(s_id, {})
                 nb_parties = 1
-                if QgsWkbTypes.flatType(geom.wkbType()) == QgsWkbTypes.MultiPolygon:
+                if QgsWkbTypes.flatType(geom.wkbType()) == QgsWkbTypes.Type.MultiPolygon:
                     nb_parties = len(geom.asMultiPolygon())
                 feat = QgsFeature(limites_out.fields())
                 feat.setGeometry(geom)
@@ -4151,7 +4149,7 @@ def executer(config=None, on_etape=None, annuler_callback=None):
                 if inter is None or inter.isEmpty():
                     continue
                 if QgsWkbTypes.flatType(inter.wkbType()) not in (
-                        QgsWkbTypes.LineString, QgsWkbTypes.MultiLineString):
+                        QgsWkbTypes.Type.LineString, QgsWkbTypes.Type.MultiLineString):
                     continue
                 paire = tuple(sorted((s1, s2)))
                 vannes = " | ".join(sorted(vannes_par_paire.get(paire, set()))) \

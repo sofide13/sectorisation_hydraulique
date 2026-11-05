@@ -35,6 +35,7 @@ lieu de retomber silencieusement sur une heuristique degradee.
 =============================================================================
 """
 
+import logging
 from collections import defaultdict
 
 try:
@@ -127,8 +128,9 @@ def construire_graphe(config, get_layer, get_layer_optional, snap_key,
                 if bool(feat[vanne_field]):
                     nb_conduites_coupees_vanne += 1
                     continue
-            except Exception:
-                pass
+            except Exception as exc:
+                logging.getLogger(__name__).debug(
+                    "Exception ignoree : %s", exc)
 
         p1, p2 = extremites_ligne(geom)
         if p1 is None or p2 is None:

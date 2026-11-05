@@ -92,6 +92,7 @@ CORRECTIF CONTIGUITE -- FIN DES SECTEURS EN CONFETTIS
 =============================================================================
 """
 
+import logging
 from collections import defaultdict
 
 from qgis.core import (
@@ -189,12 +190,12 @@ def _nettoyer_trous_interieurs(geom):
     if geom is None or geom.isEmpty():
         return geom
     flat_type = QgsWkbTypes.flatType(geom.wkbType())
-    if flat_type == QgsWkbTypes.Polygon:
+    if flat_type == QgsWkbTypes.Type.Polygon:
         rings = geom.asPolygon()
         if not rings:
             return geom
         return QgsGeometry.fromPolygonXY([rings[0]])
-    if flat_type == QgsWkbTypes.MultiPolygon:
+    if flat_type == QgsWkbTypes.Type.MultiPolygon:
         parts = geom.asMultiPolygon()
         if not parts:
             return geom
@@ -206,7 +207,7 @@ def _parties_polygonales(geom):
     """Parties polygonales d'une geometrie, chacune en QgsGeometry simple."""
     if geom is None or geom.isEmpty():
         return []
-    if QgsWkbTypes.flatType(geom.wkbType()) == QgsWkbTypes.MultiPolygon:
+    if QgsWkbTypes.flatType(geom.wkbType()) == QgsWkbTypes.Type.MultiPolygon:
         out = []
         for anneaux in (geom.asMultiPolygon() or []):
             if not anneaux:
@@ -706,8 +707,9 @@ def generer_polygones_secteurs(graphe_data, rattachement, scission, config,
                 v = feat[diam_field]
                 if v is not None and float(v) >= seuil_transport:
                     est_transport = True
-            except Exception:
-                pass
+            except Exception as exc:
+                logging.getLogger(__name__).debug(
+                    "Exception ignoree : %s", exc)
 
         if est_transport:
             nb_transport += 1
@@ -737,7 +739,7 @@ def generer_polygones_secteurs(graphe_data, rattachement, scission, config,
         polygones_par_secteur = dict(polygones_reference)
         partition_appliquee = 'reference'
         for secteur, geom in polygones_par_secteur.items():
-            if QgsWkbTypes.flatType(geom.wkbType()) == QgsWkbTypes.MultiPolygon \
+            if QgsWkbTypes.flatType(geom.wkbType()) == QgsWkbTypes.Type.MultiPolygon \
                     and len(geom.asMultiPolygon()) > 1:
                 nb_multipart += 1
     else:
@@ -750,7 +752,7 @@ def generer_polygones_secteurs(graphe_data, rattachement, scission, config,
             if soudure_max > 0:
                 union = _fermeture_morphologique_bornee(union, soudure_max, segments)
                 union = _nettoyer_trous_interieurs(union)
-            if QgsWkbTypes.flatType(union.wkbType()) == QgsWkbTypes.MultiPolygon:
+            if QgsWkbTypes.flatType(union.wkbType()) == QgsWkbTypes.Type.MultiPolygon:
                 nb_parts = len(union.asMultiPolygon())
                 if nb_parts > 1:
                     nb_multipart += 1
@@ -878,7 +880,7 @@ def generer_polygones_secteurs(graphe_data, rattachement, scission, config,
     nb_multipart = sum(
         1 for g in polygones_par_secteur.values()
         if g is not None and not g.isEmpty()
-        and QgsWkbTypes.flatType(g.wkbType()) == QgsWkbTypes.MultiPolygon
+        and QgsWkbTypes.flatType(g.wkbType()) == QgsWkbTypes.Type.MultiPolygon
         and len(g.asMultiPolygon()) > 1)
     _log("  %d polygone(s) pour %d secteur(s) de la partition."
          % (len(polygones_par_secteur), len(secteurs_attendus)))
@@ -919,7 +921,7 @@ def generer_polygones_secteurs(graphe_data, rattachement, scission, config,
     for secteur, geom in polygones_par_secteur.items():
         if geom is None or geom.isEmpty():
             continue
-        multipart_flag = 1 if QgsWkbTypes.flatType(geom.wkbType()) == QgsWkbTypes.MultiPolygon \
+        multipart_flag = 1 if QgsWkbTypes.flatType(geom.wkbType()) == QgsWkbTypes.Type.MultiPolygon \
             and len(geom.asMultiPolygon()) > 1 else 0
         f = QgsFeature(couche.fields())
         geom_out = geom

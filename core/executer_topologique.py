@@ -17,6 +17,7 @@ suivantes, a rebrancher en aval une fois le socle valide sur vos donnees
 reelles (chevauchement = 0, secteurs coherents).
 """
 
+import logging
 import sys
 
 from qgis.core import QgsProject
@@ -100,8 +101,9 @@ def executer(config=None, on_etape=None):
         if sys.stdout is not None:
             try:
                 sys.stdout.flush()
-            except Exception:
-                pass
+            except Exception as exc:
+                logging.getLogger(__name__).debug(
+                    "Exception ignoree : %s", exc)
 
     def get_layer(name):
         layers = QgsProject.instance().mapLayersByName(name)
@@ -131,8 +133,9 @@ def executer(config=None, on_etape=None):
                 line = geom.asPolyline()
                 if line and len(line) >= 2:
                     return QgsPointXY(line[0]), QgsPointXY(line[-1])
-        except Exception:
-            pass
+        except Exception as exc:
+            logging.getLogger(__name__).debug(
+                "Exception ignoree : %s", exc)
         return None, None
 
     # CoucheDifferee (cf. core/couche_differee.py) construites pendant le

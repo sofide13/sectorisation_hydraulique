@@ -3,8 +3,8 @@
 Point d'entrée principal de l'extension QGIS - Sectorisation Hydraulique
 """
 
+import logging
 import os
-import sys
 
 from qgis.PyQt.QtWidgets import QAction, QToolBar, QFileDialog, QMessageBox
 from qgis.PyQt.QtGui import QIcon
@@ -73,8 +73,9 @@ class SectorisationHydrauliquePlugin:
                 self._config_json = charger_config_json(chemin_sauvegarde)
                 self._chemin_config_courant = chemin_sauvegarde
                 return
-            except Exception:
-                pass  # On retombe sur le défaut
+            except Exception as exc:
+                logging.getLogger(__name__).debug(
+                    "Exception ignoree : %s", exc)
 
         self._config_json = charger_config_json()  # fichier par défaut
         self._chemin_config_courant = None
@@ -84,7 +85,7 @@ class SectorisationHydrauliquePlugin:
     def _creer_toolbar(self):
         self._toolbar = QToolBar("Sectorisation Hydraulique", self.iface.mainWindow())
         self._toolbar.setObjectName("SectorisationHydrauliqueToolBar")
-        self.iface.mainWindow().addToolBar(Qt.TopToolBarArea, self._toolbar)
+        self.iface.mainWindow().addToolBar(Qt.ToolBarArea.TopToolBarArea, self._toolbar)
 
         # Icône panneau
         icon_panneau = self._icone("icon.png")
@@ -139,7 +140,7 @@ class SectorisationHydrauliquePlugin:
             self.iface, self._config_json,
             parent=self.iface.mainWindow()
         )
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self._panneau)
+        self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self._panneau)
 
     def _toggle_panneau(self):
         if self._panneau:

@@ -2,7 +2,7 @@
 
 > **Author: Kouidri Sofiane** (sofihydro@gmail.com) — © 2026 Kouidri Sofiane. License: GNU GPL v2 or later (see `LICENSE`). Any redistribution must retain this notice.
 
-**Version:** 1.1.5 · **QGIS:** 3.16+
+**Version:** 1.1.7 · **QGIS:** 3.16+
 
 Automated hydraulic sectorisation (DMA design) of water supply (AEP) networks. From the pipes, subscribers and reservoirs layers of a QGIS project, the plugin builds hydraulic sectors controlled by configurable design parameters, places isolation valves on every boundary pipe and validates the final pressures with a hydraulic solver.
 
@@ -43,6 +43,39 @@ On Windows (OSGeo4W):
 ```text
 C:\OSGeo4W\bin\python-qgis.bat -m pip install wntr networkx
 ```
+
+> **⚠️ Warning — choose a WNTR version compatible with your QGIS.**
+> `wntr` depends on `numpy`, `scipy`, `pandas` and `matplotlib`. A plain `pip install wntr` (or a too recent `wntr`) can **upgrade or overwrite the `numpy` and `pandas` shipped with QGIS**. QGIS and its compiled libraries (GDAL, SciPy, etc.) are built against specific versions, so QGIS can then **crash or fail to start**. This is a known failure, observed during a first installation.
+>
+> Before installing:
+>
+> 1. Note the versions already present in QGIS (QGIS Python console):
+>    ```python
+>    import numpy, pandas, scipy
+>    print(numpy.__version__, pandas.__version__, scipy.__version__)
+>    ```
+> 2. Pick a `wntr` release (`>=1.3,<2`) whose requirements accept those versions.
+> 3. Install it **without letting pip change those packages**, either with a constraints file:
+>    ```text
+>    python-qgis.bat -m pip freeze > freeze.txt
+>    (keep only the numpy, pandas, scipy and matplotlib lines in freeze.txt, with ==)
+>    python-qgis.bat -m pip install "wntr>=1.3,<2" networkx -c freeze.txt
+>    ```
+>    or, if the dependencies are already satisfied, with `--no-deps`:
+>    ```text
+>    python-qgis.bat -m pip install --no-deps "wntr>=1.3,<2"
+>    ```
+> 4. Re-check the versions from step 1: they must be **unchanged**. If pip reports a conflict or wants to upgrade `numpy`/`pandas`, **cancel** and choose another `wntr` version instead of forcing the install.
+>
+> **Simulate first (no change made).** With pip 22.2+, add `--dry-run` to see what pip *would* install. If `numpy`, `pandas` or `scipy` appear in the `Would install` list, do not run the real installation:
+> ```text
+> python -m pip install "wntr>=1.3,<2" networkx -c constraints.txt --dry-run
+> ```
+> Afterwards, check with `python -m pip check` (must report `No broken requirements found.`).
+>
+> **Verified configuration** (Windows, OSGeo4W/standalone installer): QGIS 3.40.2, Python 3.12.8, numpy 1.26.4, pandas 2.2.2, scipy 1.13.0, matplotlib 3.8.4, networkx 3.3 + **wntr 1.3.2** installed with the constraints file above; numpy/pandas/scipy versions unchanged, `pip check` clean. Note that `wntr` 1.3.x requires `numpy<2.0`, so never let pip move numpy to 2.x.
+>
+> If QGIS no longer starts, restore the previous `numpy`/`pandas` versions (`pip install numpy==<old> pandas==<old>`) or reinstall QGIS.
 
 Check in the QGIS Python console:
 

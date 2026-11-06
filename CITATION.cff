@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "Si vous utilisez cette extension, merci de la citer comme ci-dessous."
 title: "Sectorisation Hydraulique - extension QGIS"
-version: "1.1.5"
+version: "1.1.7"
 type: software
 authors:
   - family-names: "Kouidri"

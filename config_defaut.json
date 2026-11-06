@@ -1,6 +1,5 @@
 {
   "_comment": "Configuration par défaut - Sectorisation Hydraulique",
-  "_version": "0.1",
   "COUCHES": {
     "AEP_LAYER": "AEP",
     "ABONNE_LAYER": "abonne",

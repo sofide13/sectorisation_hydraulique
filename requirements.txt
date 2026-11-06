@@ -1,4 +1,9 @@
 # Dépendances Python à installer dans l'environnement Python de QGIS.
+# ATTENTION : installer wntr SANS laisser pip modifier numpy/pandas de QGIS.
+# Choisir une version de wntr compatible avec les versions de numpy/pandas
+# deja presentes dans QGIS, puis utiliser un fichier de contraintes (-c) ou
+# --no-deps. Sinon numpy/pandas sont ecrases et QGIS peut planter.
+# Voir la section "Requirements" du README.
 networkx>=2.8.5
 wntr>=1.3,<2
 # Backend géométrique utilisé par les tests hors QGIS (QGIS reste le backend du plugin).

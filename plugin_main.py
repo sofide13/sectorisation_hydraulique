@@ -15,6 +15,7 @@ _PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 __author__ = "Kouidri Sofiane"
 __copyright__ = "Copyright (c) 2026 Kouidri Sofiane"
 
+from ._version import __version__
 from .core.config_manager import charger_config_json, sauvegarder_config_json
 
 
@@ -206,7 +207,7 @@ class SectorisationHydrauliquePlugin:
         QMessageBox.information(
             self.iface.mainWindow(),
             "À propos - Sectorisation Hydraulique",
-            "<h3>Sectorisation Hydraulique</h3>"
+            "<h3>Sectorisation Hydraulique v" + __version__ + "</h3>"
             "<p>Sectorisation hydraulique automatisée des réseaux AEP.</p>"
             "<p><b>Développée par : Kouidri Sofiane</b><br>"
             "© 2026 Kouidri Sofiane<br>Contact : sofihydro@gmail.com</p>"
